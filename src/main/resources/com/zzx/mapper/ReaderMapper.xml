@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzx.mapper.reader.ReaderMapper">
+
+    <resultMap id="BaseResultMap" type="com.zzx.bean.Reader">
+            <id property="id" column="id" />
+            <result property="name" column="name" />
+            <result property="phone" column="phone" />
+            <result property="status" column="status" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,phone,status
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from reader
+        where  id = #{id} 
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from reader
+        where  id = #{id} 
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.zzx.bean.Reader" useGeneratedKeys="true">
+        insert into reader
+        ( id,name,phone,status)
+        values (#{id},#{name},#{phone},#{status})
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.zzx.bean.Reader" useGeneratedKeys="true">
+        insert into reader
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="name != null">name,</if>
+                <if test="phone != null">phone,</if>
+                <if test="status != null">status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id},</if>
+                <if test="name != null">#{name},</if>
+                <if test="phone != null">#{phone},</if>
+                <if test="status != null">#{status},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.zzx.bean.Reader">
+        update reader
+        <set>
+                <if test="name != null">
+                    name = #{name},
+                </if>
+                <if test="phone != null">
+                    phone = #{phone},
+                </if>
+                <if test="status != null">
+                    status = #{status},
+                </if>
+        </set>
+        where   id = #{id} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.zzx.bean.Reader">
+        update reader
+        set 
+            name =  #{name},
+            phone =  #{phone},
+            status =  #{status}
+        where   id = #{id} 
+    </update>
+</mapper>
