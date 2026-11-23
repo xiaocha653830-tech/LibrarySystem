@@ -1,5 +1,6 @@
 package com.zzx.mapper.reader;
 
+import com.zzx.bean.Reader;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,11 +24,12 @@ class ReaderMapperTest {
 
     @Test
     void insertSelective() {
+
     }
 
     @Test
     void selectByPrimaryKey() {
-        System.out.println(readerMapper.selectByPrimaryKey(1L));
+
     }
 
     @Test
@@ -37,4 +39,6 @@ class ReaderMapperTest {
     @Test
     void updateByPrimaryKey() {
     }
+
+
 }

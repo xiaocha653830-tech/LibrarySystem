@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图书与读者管理系统</title>
+  <style>
+    :root {
+      --primary: #315efb;
+      --primary-dark: #244bd0;
+      --danger: #dc3545;
+      --bg: #f4f7fb;
+      --text: #243044;
+      --muted: #718096;
+      --line: #e5eaf2;
+      --surface: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 28px 18px; background: var(--bg); color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+    }
+    h1 { margin: 0 0 6px; font-size: 27px; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    button, input, select { font: inherit; }
+    button {
+      border: 0; border-radius: 8px; padding: 10px 15px; cursor: pointer;
+      background: var(--primary); color: white; transition: .15s;
+    }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button.secondary { background: #e9eef8; color: #34445f; }
+    button.secondary:hover { background: #dce5f5; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #b92535; }
+    button.small { padding: 7px 10px; font-size: 13px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .tab {
+      padding: 11px 20px; background: #e7ecf5; color: #42516a;
+      border-radius: 9px; font-weight: 600;
+    }
+    .tab.active { background: var(--primary); color: white; }
+    .system { display: none; }
+    .system.active { display: block; }
+    .layout {
+      display: grid; grid-template-columns: minmax(280px, 350px) minmax(0, 1fr);
+      gap: 18px; align-items: start;
+    }
+    .panel {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 13px;
+      box-shadow: 0 4px 18px rgba(30, 50, 80, .045); overflow: hidden;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 17px 19px; border-bottom: 1px solid #edf0f5;
+    }
+    .panel-head h2 { margin: 0; font-size: 17px; }
+    .panel-body { padding: 18px 19px; }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 13px; }
+    .field { display: grid; gap: 6px; }
+    label { font-size: 13px; font-weight: 600; color: #526176; }
+    input, select {
+      width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #d8dfeb;
+      border-radius: 8px; background: white; color: var(--text); outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(49,94,251,.1); }
+    .form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 17px; }
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid #edf0f5;
+    }
+    .search { display: flex; gap: 8px; width: min(100%, 330px); }
+    .search input { flex: 1; }
+    .status { color: var(--muted); font-size: 13px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th, td {
+      padding: 12px 13px; text-align: left; border-bottom: 1px solid #edf0f5;
+      font-size: 13px; white-space: nowrap;
+    }
+    th { color: #526176; background: #f8fafc; font-weight: 600; }
+    tbody tr:hover { background: #f8fbff; }
+    .actions { display: flex; gap: 6px; }
+    .empty, .error, .notice { padding: 28px 18px; text-align: center; color: var(--muted); }
+    .error { color: #c62828; }
+    .notice { text-align: left; padding: 10px 13px; margin-bottom: 14px; border-radius: 8px; background: #f1f5ff; color: #40547a; font-size: 13px; }
+    .toast { position: fixed; right: 20px; bottom: 20px; max-width: min(420px, calc(100vw - 40px)); padding: 12px 16px; border-radius: 9px; color: white; background: #26354d; box-shadow: 0 6px 24px #0002; display: none; z-index: 10; }
+    .toast.show { display: block; }
+    .muted { color: var(--muted); }
+    .pagination { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; padding:15px 12px; border-top:1px solid #edf0f5; }
+    .pagination button { padding:7px 11px; font-size:13px; }
+    .pagination button:disabled { opacity:.4; cursor:not-allowed; }
+    .pagination-info { color:var(--muted); font-size:13px; }
+    .pagination select { width:auto; padding:7px 9px; font-size:13px; }
+    @media (max-width: 850px) { .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) {
+      body { padding: 18px 11px; } h1 { font-size: 22px; }
+      .tabs { display: grid; grid-template-columns: 1fr 1fr; }
+      .tab { padding: 10px 8px; }
+      .panel-head, .toolbar { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<main class="container">
+  <header>
+    <div>
+      <h1>图书与读者管理系统</h1>
+      <p class="subtitle">统一入口，分别管理图书信息和读者信息 · 支持后端分页</p>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="管理系统切换">
+    <button class="tab active" type="button" data-tab="books">图书管理</button>
+    <button class="tab" type="button" data-tab="readers">读者管理</button>
+  </nav>
+
+  <section id="books" class="system active">
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="bookFormTitle">添加图书</h2>
+          <span class="status">POST /books · PUT /books/{id}</span>
+        </div>
+        <div class="panel-body">
+          <div class="notice">新增时 ID 由数据库自增生成；编辑时使用表格中的 ID。</div>
+          <form id="bookForm">
+            <input type="hidden" id="bookId">
+            <div class="form-grid">
+              <div class="field"><label for="bookIsbn">ISBN *</label><input id="bookIsbn" required maxlength="64" placeholder="例如 ISBN-001"></div>
+              <div class="field"><label for="bookTitle">书名 *</label><input id="bookTitle" required placeholder="请输入书名"></div>
+              <div class="field"><label for="bookAuthor">作者</label><input id="bookAuthor" placeholder="请输入作者"></div>
+              <div class="field"><label for="bookPublisher">出版社</label><input id="bookPublisher" placeholder="请输入出版社"></div>
+              <div class="field"><label for="bookTotal">馆藏总数</label><input id="bookTotal" type="number" min="0" value="0"></div>
+              <div class="field"><label for="bookAvailable">可借数量</label><input id="bookAvailable" type="number" min="0" value="0"></div>
+            </div>
+            <div class="form-actions">
+              <button id="bookSubmit" type="submit">添加图书</button>
+              <button class="secondary" type="button" id="bookReset">清空</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>图书列表</h2>
+          <span class="status" id="bookStatus">等待加载</span>
+        </div>
+        <div class="toolbar">
+          <div class="search">
+            <input id="bookSearchId" type="number" min="1" placeholder="输入图书 ID 查询">
+            <button type="button" id="bookSearchBtn">查询</button>
+          </div>
+          <button class="secondary" type="button" id="bookRefresh">刷新列表</button>
+        </div>
+        <div id="bookContent"><div class="empty">正在加载图书数据……</div></div>
+        <div id="bookPagination" class="pagination"></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="readers" class="system">
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="readerFormTitle">添加读者</h2>
+          <span class="status">POST /readers · PUT /readers/{id}</span>
+        </div>
+        <div class="panel-body">
+          <div class="notice">新增时 ID 由数据库自增生成；编辑时使用表格中的 ID。</div>
+          <form id="readerForm">
+            <input type="hidden" id="readerId">
+            <div class="form-grid">
+              <div class="field"><label for="readerName">姓名 *</label><input id="readerName" required placeholder="请输入读者姓名"></div>
+              <div class="field"><label for="readerPhone">手机号</label><input id="readerPhone" type="tel" placeholder="请输入手机号"></div>
+              <div class="field">
+                <label for="readerStatus">状态</label>
+                <select id="readerStatus">
+                  <option value="1">正常（1）</option>
+                  <option value="0">停用（0）</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button id="readerSubmit" type="submit">添加读者</button>
+              <button class="secondary" type="button" id="readerReset">清空</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>读者列表</h2>
+          <span class="status" id="readerStatusText">等待加载</span>
+        </div>
+        <div class="toolbar">
+          <div class="search">
+            <input id="readerSearchId" type="number" min="1" placeholder="输入读者 ID 查询">
+            <button type="button" id="readerSearchBtn">查询</button>
+          </div>
+          <button class="secondary" type="button" id="readerRefresh">刷新列表</button>
+        </div>
+        <div id="readerContent"><div class="empty">正在加载读者数据……</div></div>
+        <div id="readerPagination" class="pagination"></div>
+      </section>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // 使用相对路径，页面部署在 /、/book_war 等上下文下都能访问同一应用的接口。
+  const API = {
+    books: './books',
+    readers: './readers'
+  };
+
+  const $ = (id) => document.getElementById(id);
+  let toastTimer;
+
+  // 图书和读者分别维护分页状态。
+  const pageState = {
+    books: { pageNum: 1, pageSize: 5, pages: 0, total: 0 },
+    readers: { pageNum: 1, pageSize: 5, pages: 0, total: 0 }
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;').replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function showToast(message) {
+    const toast = $('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  async function request(url, options = {}) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Accept': 'application/json',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.headers || {})
+      }
+    });
+    const text = await response.text();
+    let data = null;
+    if (text) {
+      try { data = JSON.parse(text); } catch { data = text; }
+    }
+    if (!response.ok) {
+      const message = typeof data === 'string' ? data :
+        (data?.message || data?.error || data?.detail || response.statusText);
+      throw new Error(`HTTP ${response.status}：${message}`);
+    }
+    return data;
+  }
+
+  function renderError(targetId, error) {
+    $(targetId).innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+  }
+
+  // ---------------- 图书 CRUD ----------------
+  async function loadBooks() {
+    $('bookStatus').textContent = '正在加载…';
+    const state = pageState.books;
+    try {
+      const data = await request(`${API.books}/page?pageNum=${state.pageNum}&pageSize=${state.pageSize}`);
+      if (!data || !Array.isArray(data.list)) throw new Error('分页接口返回格式不正确，应包含 list 数组。');
+      state.pageNum = Number(data.pageNum) || state.pageNum;
+      state.pageSize = Number(data.pageSize) || state.pageSize;
+      state.pages = Number(data.pages) || 0;
+      state.total = Number(data.total) || 0;
+      if (!data.list.length && state.pageNum > 1 && state.pageNum > state.pages) {
+        state.pageNum = Math.max(1, state.pages);
+        return await loadBooks();
+      }
+      $('bookStatus').textContent = `共 ${state.total} 本`;
+      if (!data.list.length) {
+        $('bookContent').innerHTML = '<div class="empty">暂无图书记录。</div>';
+      } else {
+        $('bookContent').innerHTML = `
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>ISBN</th><th>书名</th><th>作者</th><th>出版社</th><th>馆藏</th><th>可借</th><th>操作</th></tr></thead>
+            <tbody>${data.list.map(book => `
+              <tr>
+                <td>${escapeHtml(book.id)}</td><td>${escapeHtml(book.isbn)}</td>
+                <td>${escapeHtml(book.title)}</td><td>${escapeHtml(book.author)}</td>
+                <td>${escapeHtml(book.publisher)}</td><td>${escapeHtml(book.totalCount)}</td>
+                <td>${escapeHtml(book.availableCount)}</td>
+                <td><div class="actions">
+                  <button class="small secondary" type="button" data-book-edit="${escapeHtml(book.id)}">编辑</button>
+                  <button class="small danger" type="button" data-book-delete="${escapeHtml(book.id)}">删除</button>
+                </div></td>
+              </tr>`).join('')}
+            </tbody>
+          </table></div>`;
+      }
+      renderPagination('bookPagination', 'books');
+    } catch (error) {
+      $('bookStatus').textContent = '加载失败';
+      $('bookPagination').innerHTML = '';
+      renderError('bookContent', error);
+    }
+  }
+
+  function renderPagination(containerId, type) {
+    const state = pageState[type];
+    const container = $(containerId);
+    if (!state.pages || !state.total) { container.innerHTML = ''; return; }
+    container.innerHTML = `
+      <button class="secondary" type="button" data-page-type="${type}" data-page="${state.pageNum - 1}" ${state.pageNum <= 1 ? 'disabled' : ''}>上一页</button>
+      <span class="pagination-info">第 ${state.pageNum} / ${state.pages} 页，共 ${state.total} 条</span>
+      <button class="secondary" type="button" data-page-type="${type}" data-page="${state.pageNum + 1}" ${state.pageNum >= state.pages ? 'disabled' : ''}>下一页</button>
+      <select aria-label="每页显示数量" data-page-size="${type}">
+        <option value="5" ${state.pageSize === 5 ? 'selected' : ''}>5 条/页</option>
+        <option value="10" ${state.pageSize === 10 ? 'selected' : ''}>10 条/页</option>
+        <option value="20" ${state.pageSize === 20 ? 'selected' : ''}>20 条/页</option>
+        <option value="50" ${state.pageSize === 50 ? 'selected' : ''}>50 条/页</option>
+      </select>`;
+  }
+
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-page-type]');
+    if (!button || button.disabled) return;
+    const type = button.dataset.pageType;
+    pageState[type].pageNum = Number(button.dataset.page);
+    if (type === 'books') await loadBooks(); else await loadReaders();
+  });
+
+  document.addEventListener('change', async (event) => {
+    const select = event.target.closest('[data-page-size]');
+    if (!select) return;
+    const type = select.dataset.pageSize;
+    pageState[type].pageSize = Number(select.value);
+    pageState[type].pageNum = 1;
+    if (type === 'books') await loadBooks(); else await loadReaders();
+  });
+
+  function resetBookForm() {
+    $('bookForm').reset();
+    $('bookId').value = '';
+    $('bookTotal').value = '0';
+    $('bookAvailable').value = '0';
+    $('bookFormTitle').textContent = '添加图书';
+    $('bookSubmit').textContent = '添加图书';
+  }
+
+  $('bookForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const id = $('bookId').value;
+    const book = {
+      isbn: $('bookIsbn').value.trim(),
+      title: $('bookTitle').value.trim(),
+      author: $('bookAuthor').value.trim() || null,
+      publisher: $('bookPublisher').value.trim() || null,
+      totalCount: Number($('bookTotal').value),
+      availableCount: Number($('bookAvailable').value)
+    };
+    try {
+      if (id) {
+        await request(`${API.books}/${encodeURIComponent(id)}`, {
+          method: 'PUT', body: JSON.stringify(book)
+        });
+        showToast('图书修改成功');
+      } else {
+        await request(API.books, { method: 'POST', body: JSON.stringify(book) });
+        pageState.books.pageNum = 1;
+        showToast('图书添加成功');
+      }
+      resetBookForm();
+      await loadBooks();
+    } catch (error) { showToast(error.message); }
+  });
+
+  $('bookContent').addEventListener('click', async (event) => {
+    const editButton = event.target.closest('[data-book-edit]');
+    const deleteButton = event.target.closest('[data-book-delete]');
+    if (editButton) {
+      const id = editButton.dataset.bookEdit;
+      try {
+        const book = await request(`${API.books}/${encodeURIComponent(id)}`);
+        $('bookId').value = book.id;
+        $('bookIsbn').value = book.isbn ?? '';
+        $('bookTitle').value = book.title ?? '';
+        $('bookAuthor').value = book.author ?? '';
+        $('bookPublisher').value = book.publisher ?? '';
+        $('bookTotal').value = book.totalCount ?? 0;
+        $('bookAvailable').value = book.availableCount ?? 0;
+        $('bookFormTitle').textContent = `编辑图书 #${book.id}`;
+        $('bookSubmit').textContent = '保存修改';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) { showToast(error.message); }
+    }
+    if (deleteButton) {
+      const id = deleteButton.dataset.bookDelete;
+      if (!confirm(`确定删除图书 ID ${id} 吗？`)) return;
+      try {
+        await request(`${API.books}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        showToast('图书删除成功');
+        await loadBooks();
+      } catch (error) { showToast(error.message); }
+    }
+  });
+
+  $('bookSearchBtn').addEventListener('click', async () => {
+    const id = $('bookSearchId').value.trim();
+    if (!id) { await loadBooks(); return; }
+    try {
+      const book = await request(`${API.books}/${encodeURIComponent(id)}`);
+      $('bookPagination').innerHTML = '';
+      $('bookStatus').textContent = `查询到图书 #${book.id}`;
+      $('bookContent').innerHTML = `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>ISBN</th><th>书名</th><th>作者</th><th>出版社</th><th>馆藏</th><th>可借</th><th>操作</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(book.id)}</td><td>${escapeHtml(book.isbn)}</td><td>${escapeHtml(book.title)}</td>
+        <td>${escapeHtml(book.author)}</td><td>${escapeHtml(book.publisher)}</td><td>${escapeHtml(book.totalCount)}</td>
+        <td>${escapeHtml(book.availableCount)}</td><td><div class="actions">
+        <button class="small secondary" type="button" data-book-edit="${escapeHtml(book.id)}">编辑</button>
+        <button class="small danger" type="button" data-book-delete="${escapeHtml(book.id)}">删除</button>
+        </div></td></tr></tbody></table></div>`;
+    } catch (error) { renderError('bookContent', error); $('bookStatus').textContent = '查询失败'; }
+  });
+
+  $('bookRefresh').addEventListener('click', loadBooks);
+  $('bookReset').addEventListener('click', resetBookForm);
+
+  // ---------------- 读者 CRUD ----------------
+  async function loadReaders() {
+    $('readerStatusText').textContent = '正在加载…';
+    const state = pageState.readers;
+    try {
+      const data = await request(`${API.readers}/page?pageNum=${state.pageNum}&pageSize=${state.pageSize}`);
+      if (!data || !Array.isArray(data.list)) throw new Error('分页接口返回格式不正确，应包含 list 数组。');
+      state.pageNum = Number(data.pageNum) || state.pageNum;
+      state.pageSize = Number(data.pageSize) || state.pageSize;
+      state.pages = Number(data.pages) || 0;
+      state.total = Number(data.total) || 0;
+      if (!data.list.length && state.pageNum > 1 && state.pageNum > state.pages) {
+        state.pageNum = Math.max(1, state.pages);
+        return await loadReaders();
+      }
+      $('readerStatusText').textContent = `共 ${state.total} 位`;
+      if (!data.list.length) $('readerContent').innerHTML = '<div class="empty">暂无读者记录。</div>';
+      else renderReaders(data.list);
+      renderPagination('readerPagination', 'readers');
+    } catch (error) {
+      $('readerStatusText').textContent = '加载失败';
+      $('readerPagination').innerHTML = '';
+      renderError('readerContent', error);
+    }
+  }
+
+  function renderReaders(readers) {
+    $('readerContent').innerHTML = `
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>姓名</th><th>手机号</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>${readers.map(reader => `
+          <tr><td>${escapeHtml(reader.id)}</td><td>${escapeHtml(reader.name)}</td>
+          <td>${escapeHtml(reader.phone)}</td><td>${escapeHtml(reader.status)}</td>
+          <td><div class="actions">
+            <button class="small secondary" type="button" data-reader-edit="${escapeHtml(reader.id)}">编辑</button>
+            <button class="small danger" type="button" data-reader-delete="${escapeHtml(reader.id)}">删除</button>
+          </div></td></tr>`).join('')}
+        </tbody>
+      </table></div>`;
+  }
+
+  function resetReaderForm() {
+    $('readerForm').reset();
+    $('readerId').value = '';
+    $('readerStatus').value = '1';
+    $('readerFormTitle').textContent = '添加读者';
+    $('readerSubmit').textContent = '添加读者';
+  }
+
+  $('readerForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const id = $('readerId').value;
+    const reader = {
+      name: $('readerName').value.trim(),
+      phone: $('readerPhone').value.trim() || null,
+      status: Number($('readerStatus').value)
+    };
+    try {
+      if (id) {
+        await request(`${API.readers}/${encodeURIComponent(id)}`, {
+          method: 'PUT', body: JSON.stringify(reader)
+        });
+        showToast('读者修改成功');
+      } else {
+        await request(API.readers, { method: 'POST', body: JSON.stringify(reader) });
+        pageState.readers.pageNum = 1;
+        showToast('读者添加成功');
+      }
+      resetReaderForm();
+      await loadReaders();
+    } catch (error) { showToast(error.message); }
+  });
+
+  $('readerContent').addEventListener('click', async (event) => {
+    const editButton = event.target.closest('[data-reader-edit]');
+    const deleteButton = event.target.closest('[data-reader-delete]');
+    if (editButton) {
+      const id = editButton.dataset.readerEdit;
+      try {
+        const reader = await request(`${API.readers}/${encodeURIComponent(id)}`);
+        $('readerId').value = reader.id;
+        $('readerName').value = reader.name ?? '';
+        $('readerPhone').value = reader.phone ?? '';
+        $('readerStatus').value = String(reader.status ?? 1);
+        $('readerFormTitle').textContent = `编辑读者 #${reader.id}`;
+        $('readerSubmit').textContent = '保存修改';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) { showToast(error.message); }
+    }
+    if (deleteButton) {
+      const id = deleteButton.dataset.readerDelete;
+      if (!confirm(`确定删除读者 ID ${id} 吗？`)) return;
+      try {
+        await request(`${API.readers}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        showToast('读者删除成功');
+        await loadReaders();
+      } catch (error) { showToast(error.message); }
+    }
+  });
+
+  $('readerSearchBtn').addEventListener('click', async () => {
+    const id = $('readerSearchId').value.trim();
+    if (!id) { await loadReaders(); return; }
+    try {
+      const reader = await request(`${API.readers}/${encodeURIComponent(id)}`);
+      $('readerPagination').innerHTML = '';
+      $('readerStatusText').textContent = `查询到读者 #${reader.id}`;
+      renderReaders([reader]);
+    } catch (error) { renderError('readerContent', error); $('readerStatusText').textContent = '查询失败'; }
+  });
+
+  $('readerRefresh').addEventListener('click', loadReaders);
+  $('readerReset').addEventListener('click', resetReaderForm);
+
+  // 两个系统独立切换、独立加载。
+  document.querySelectorAll('[data-tab]').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active', item === button));
+      document.querySelectorAll('.system').forEach(section => section.classList.toggle('active', section.id === button.dataset.tab));
+      if (button.dataset.tab === 'books') loadBooks();
+      else loadReaders();
+    });
+  });
+
+  loadBooks();
+</script>
+</body>
+</html>

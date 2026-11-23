@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Data
 public class Book {
 
-    private int id;
+    private Integer id;
     private String isbn;
     private String title;
     private String author;
@@ -19,6 +19,5 @@ public class Book {
     private Integer totalCount;
     private Integer availableCount;
 
-    public Book(String isbn, String title, String author, String publisher, int totalCount, int availableCount) {
-    }
+
 }

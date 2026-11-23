@@ -1,7 +1,10 @@
 package com.zzx.mapper.reader;
 
 import com.zzx.bean.Reader;
-import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
 * @author masionx
@@ -9,19 +12,71 @@ import org.apache.ibatis.annotations.Mapper;
 * @createDate 2026-11-17 20:17:38
 * @Entity com.zzx.example.entity.Reader
 */
+@Repository
 @Mapper
 public interface ReaderMapper {
 
-    int deleteByPrimaryKey(Long id);
 
+    @Delete("DELETE FROM reader WHERE id = #{id}")
+    int deleteByPrimaryKey(@Param("id") Integer id);
+
+    @Insert("""
+    INSERT INTO reader
+    (name, phone, status)
+    VALUES
+    (#{name}, #{phone}, #{status})
+    """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Reader record);
 
+    @Insert("""
+    <script>
+        INSERT INTO reader
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">name,</if>
+            <if test="phone != null">phone,</if>
+            <if test="status != null">status,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="status != null">#{status},</if>
+        </trim>
+    </script>
+    """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insertSelective(Reader record);
 
-    Reader selectByPrimaryKey(Long id);
 
+    @Select("SELECT * FROM reader WHERE id = #{id}")
+    Reader selectByPrimaryKey(@Param("id") Integer id);
+
+
+    @Update("""
+    <script>
+        UPDATE reader
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </script>
+    """)
     int updateByPrimaryKeySelective(Reader record);
 
+
+    @Update("""
+    UPDATE reader
+    SET name = #{name},
+        phone = #{phone},
+        status = #{status}
+    WHERE id = #{id}
+    """)
     int updateByPrimaryKey(Reader record);
+
+    @Select("SELECT * FROM reader ORDER BY id ASC")
+    List<Reader> getAll();
 
 }
