@@ -1,9 +1,7 @@
 package com.zzx.mapper.borrowBook;
 
 
-import com.zzx.bean.Book;
 import com.zzx.bean.BorrowRecord;
-import com.zzx.bean.Reader;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -47,6 +45,14 @@ public interface BorrowBookMapper {
             @Param("id") Integer id,
             @Param("returnDate") String returnDate
     );
+
+    // 查询Id对应的借阅记录
+    @Select("""
+        SELECT *
+        FROM borrow_record
+        WHERE id = #{id}
+        """)
+    BorrowRecord getByRecordId(Integer id);
 
 
     // 查询某个读者的借阅记录

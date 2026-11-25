@@ -1,6 +1,8 @@
 package com.zzx.service.impl;
 
 import com.zzx.bean.BorrowRecord;
+import com.zzx.exception.BookNotFoundException;
+import com.zzx.exception.BusinessException;
 import com.zzx.mapper.book.BookMapper;
 import com.zzx.mapper.borrowBook.BorrowBookMapper;
 import com.zzx.service.BorrowBookService;
@@ -29,12 +31,12 @@ public class BorrowBookServiceImpl implements BorrowBookService {
         //1. 检查该读者是否已经借阅且未归还
         int count = borrowBookMapper.countUnreturnedRecord(bookId, readerId);
         if (count > 0 ){
-            throw new RuntimeException("该读者已经借阅此书，尚未归还");
+            throw new BusinessException("该读者已经借阅此书，尚未归还");
         }
 
         int rows = bookMapper.decreaseAvailableCount(bookId);
         if (rows == 0) {
-            throw new RuntimeException("图书不存在或库存不足");
+            throw new BookNotFoundException("图书不存在或库存不足");
         }
 
         BorrowRecord record = new BorrowRecord();
@@ -45,13 +47,25 @@ public class BorrowBookServiceImpl implements BorrowBookService {
 
         int result = borrowBookMapper.insertBorrowRecord(record);
         if (result == 0) {
-            throw new RuntimeException("借阅记录创建失败");
+            throw new BusinessException("借阅记录创建失败");
         }
     }
 
     @Override
     @Transactional
-    public void returnBook(BorrowRecord borrowRecord) {
+    public void returnBook(Integer borrowRecordId) {
+        BorrowRecord record = borrowBookMapper.getByRecordId(borrowRecordId);
+
+        String date = String.valueOf(LocalDate.now());
+        int row = borrowBookMapper.updateReturnDate(record.getId(), date);
+        if (row == 0){
+            throw new BusinessException("借阅记录更新失败");
+        }
+
+        int i = bookMapper.increaseAvailableCount(record.getBookId());
+        if (i == 0){
+            throw new BusinessException("借阅信息有误");
+        }
 
     }
 }

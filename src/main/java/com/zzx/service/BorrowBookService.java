@@ -6,5 +6,5 @@ public interface BorrowBookService {
 
      void borrowBook(Integer bookId, Integer readerId);
 
-     void returnBook(BorrowRecord borrowRecord);
+     void returnBook(Integer borrowRecordId);
 }

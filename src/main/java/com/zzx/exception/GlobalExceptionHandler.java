@@ -33,12 +33,24 @@ public class GlobalExceptionHandler {
                 .body(e.getMessage());
     }
 
+    //处理业务异常
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<String> handleBusinessException(
+    public ResponseEntity<String> BusinessException(
             BusinessException e) {
 
         return ResponseEntity
                 .badRequest()
                 .body(e.getMessage());
+    }
+
+    //处理程序未预期异常
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> ExceptionHandler(
+            Exception e){
+        e.printStackTrace();
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("服务器内部错误");
+
     }
 }
