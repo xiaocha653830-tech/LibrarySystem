@@ -3,6 +3,7 @@ package com.zzx.controller;
 import com.github.pagehelper.PageInfo;
 import com.zzx.bean.Book;
 import com.zzx.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +34,13 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<String> insertBook(@RequestBody Book book) throws Exception {
+    public ResponseEntity<String> insertBook(@Valid @RequestBody Book book) throws Exception {
         int insert = bookService.insert(book);
         if (insert > 0) {
-            return ResponseEntity.ok("添加成功");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("添加成功");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("添加失败");
         }
     }

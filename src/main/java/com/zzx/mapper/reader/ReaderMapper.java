@@ -12,8 +12,7 @@ import java.util.List;
 * @createDate 2026-11-17 20:17:38
 * @Entity com.zzx.example.entity.Reader
 */
-@Repository
-@Mapper
+
 public interface ReaderMapper {
 
 

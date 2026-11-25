@@ -1,0 +1,31 @@
+### 测试添加图书
+POST http://localhost:8080/books
+Content-Type: application/json
+
+{
+  "isbn": "9787300000001",
+  "title": "Java编程思想",
+  "author": "Bruce Eckel",
+  "publisher": "机械工业出版社",
+  "totalCount": 10,
+  "availableCount": 10
+}
+### 测试添加图书
+POST http://localhost:8080/books
+Content-Type: application/json
+
+{
+  "isbn": "",
+  "title": "Java编程思想",
+  "author": "Bruce Eckel",
+  "totalCount": 10
+}
+### 测试添加图书
+POST http://localhost:8080/books
+Content-Type: application/json
+
+{
+  "isbn": "",
+  "title": "",
+  "totalCount": -1
+}

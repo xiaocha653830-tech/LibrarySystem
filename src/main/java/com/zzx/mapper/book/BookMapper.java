@@ -89,4 +89,19 @@ public interface BookMapper {
     @Select("SELECT * FROM book ORDER BY id ASC")
     List<Book> getAll();
 
+    @Update("""
+    UPDATE book
+    SET available_count = available_count - 1
+    WHERE id = #{id}
+      AND available_count > 0
+    """)
+    int decreaseAvailableCount(Integer id);
+
+    @Update("""
+    UPDATE book
+    SET available_count = available_count + 1
+    WHERE id = #{id}
+      AND available_count < total_count
+    """)
+    int increaseAvailableCount(Integer id);
 }
