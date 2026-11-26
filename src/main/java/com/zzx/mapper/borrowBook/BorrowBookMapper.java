@@ -82,4 +82,11 @@ public interface BorrowBookMapper {
             @Param("bookId") Integer bookId,
             @Param("readerId") Integer readerId
     );
+
+    @Select("""
+        SELECT *
+        FROM borrow_record
+        ORDER BY id DESC
+        """)
+    List<BorrowRecord> getAll();
 }
